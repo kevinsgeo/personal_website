@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0a0a0a;
+  --foreground: #00ff41;
+  --green-dim: #00cc33;
+  --green-glow: #00ff41;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-retro);
+  --font-mono: var(--font-retro);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: inherit;
+  overflow: hidden;
+}
+
+/* CRT scanline overlay */
+.crt::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.15) 2px,
+    rgba(0, 0, 0, 0.15) 4px
+  );
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* Subtle screen flicker */
+.crt::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 255, 65, 0.015);
+  pointer-events: none;
+  z-index: 50;
+  animation: flicker 4s infinite;
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 0.02; }
+  50% { opacity: 0.04; }
+}
+
+/* Blinking cursor */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.cursor-blink {
+  animation: blink 0.8s step-end infinite;
+}
+
+/* Text glow effect */
+.text-glow {
+  text-shadow:
+    0 0 4px rgba(0, 255, 65, 0.6),
+    0 0 12px rgba(0, 255, 65, 0.3),
+    0 0 24px rgba(0, 255, 65, 0.1);
+}
+
+/* Subtle vignette around the edges */
+.vignette {
+  box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.7);
+}
