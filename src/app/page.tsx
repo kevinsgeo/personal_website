@@ -198,7 +198,7 @@ export default function Home() {
             minHeight: "100vh",
           }}
         >
-          <div style={{ animation: "fadeInUp 0.5s ease-out both", width: "420px", maxWidth: "90vw" }}>
+          <div style={{ animation: "fadeInUp 0.5s ease-out both", width: "520px", maxWidth: "92vw" }}>
             <section className="nes-container with-title is-centered is-dark is-rounded">
               <p className="title">SELECT</p>
               <div className="flex flex-col gap-4">

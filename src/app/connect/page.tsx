@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import PageHeader from "@/components/PageHeader";
+import Link from "next/link";
 import Particles from "@/components/Particles";
+import ScrollReveal from "@/components/ScrollReveal";
 
 function EmailIcon() {
   return (
@@ -46,13 +47,14 @@ const LINKS = [
 export default function ConnectPage() {
   return (
     <div className="relative z-10 min-h-screen px-6">
-      <PageHeader />
-
-      <div
-        className="flex flex-col items-center pb-16 pt-8"
-        style={{ animation: "fadeInUp 0.8s ease-out both" }}
-      >
-        <div className="mt-12 flex flex-col items-center gap-8">
+      <div className="flex flex-col items-center pb-16 pt-8">
+        <Link
+          href="/"
+          className="mb-8 self-start pl-0 text-xs tracking-[0.15em] text-green-dim transition-colors hover:text-green sm:pl-6"
+        >
+          &lt; Back
+        </Link>
+        <ScrollReveal className="flex w-full max-w-4xl flex-col items-center gap-8">
           <h2
             className="text-glow text-lg uppercase tracking-[0.2em] sm:text-xl"
             style={{ color: "#00ff41" }}
@@ -91,7 +93,7 @@ export default function ConnectPage() {
           >
             Feel free to reach out — always happy to chat.
           </p>
-        </div>
+        </ScrollReveal>
       </div>
 
       <Particles count={60} />
