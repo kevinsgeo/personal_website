@@ -42,6 +42,12 @@ const LINKS = [
     color: "#F5B041",
     icon: <EmailIcon />,
   },
+  {
+    label: "Letterboxd",
+    href: "https://letterboxd.com/DoughnutDaddy/",
+    color: "#00e054",
+    icon: <Image src="/letterboxd.svg" alt="Letterboxd" width={32} height={32} />,
+  },
 ];
 
 export default function ConnectPage() {
@@ -91,7 +97,7 @@ export default function ConnectPage() {
             className="mt-4 max-w-sm text-center text-[10px] leading-relaxed tracking-wider"
             style={{ color: "#00663a" }}
           >
-            Feel free to reach out — always happy to chat.
+            Feel free to reach out - always happy to chat.
           </p>
         </ScrollReveal>
       </div>

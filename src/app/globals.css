@@ -165,13 +165,25 @@ body {
 }
 
 /* Connect link icon hover */
-.connect-link svg {
+.connect-link svg,
+.connect-link img {
   transition: filter 0.3s ease, transform 0.3s ease;
 }
 
-.connect-link:hover svg {
+.connect-link:hover svg,
+.connect-link:hover img {
   filter: drop-shadow(0 0 8px rgba(0, 255, 65, 0.6));
   transform: scale(1.15);
+}
+
+/* Work experience image - outside box, center-aligned */
+.work-experience-image {
+  background: rgba(0, 10, 0, 0.35);
+}
+
+/* Lang Lab banner: correct orientation (was upside down) */
+.work-experience-image.work-logo-rotate img {
+  transform: rotate(180deg);
 }
 
 /* Work experience card */

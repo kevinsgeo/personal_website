@@ -163,14 +163,18 @@ export default function Home() {
 
             {showSubtitle && (
               <p
-                className="text-xs tracking-[0.3em] uppercase sm:text-sm"
+                className="text-sm tracking-wide sm:text-base"
                 style={{
                   color: "#00cc33",
                   opacity: subtitleOpacity,
                   transition: "opacity 1.2s ease-in-out",
                 }}
               >
-                Welcome to my corner of the internet
+                Software Developer.
+                <span style={{ marginLeft: "0.5em" }}> </span>
+                Undergraduate Researcher.
+                <span style={{ marginLeft: "0.5em" }}> </span>
+                Film Enthusiast.
               </p>
             )}
           </div>
@@ -189,16 +193,26 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Retro game menu — NES.css (nostalgic-css) */}
+      {/* Intro + Retro game menu — NES.css (nostalgic-css) */}
       {showMenu && (
         <div
-          className="flex items-center justify-center"
+          className="flex flex-col items-center justify-center"
           style={{
             paddingTop: "13rem",
             minHeight: "100vh",
           }}
         >
-          <div style={{ animation: "fadeInUp 0.5s ease-out both", width: "520px", maxWidth: "92vw" }}>
+          <p
+            className="mx-auto max-w-lg px-4 text-center text-sm leading-relaxed sm:text-base"
+            style={{
+              color: "#00cc33",
+              animation: "fadeInUp 0.5s ease-out 0.1s both",
+              marginBottom: "2rem",
+            }}
+          >
+            I&apos;m Kevin, a computer science and data science double major at UW-Madison. I love films, football, F1, and tech. Look around to learn more!
+          </p>
+          <div style={{ animation: "fadeInUp 0.5s ease-out 0.2s both", width: "520px", maxWidth: "92vw" }}>
             <section className="nes-container with-title is-centered is-dark is-rounded">
               <p className="title">SELECT</p>
               <div className="flex flex-col gap-4">
