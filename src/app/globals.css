@@ -38,7 +38,6 @@ body {
   z-index: 50;
 }
 
-/* Subtle screen flicker */
 .crt::after {
   content: "";
   position: fixed;
@@ -74,17 +73,57 @@ body {
   box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.7);
 }
 
-/* Header scroll transition */
-.header-transition {
-  transition:
-    top 1.2s cubic-bezier(0.4, 0, 0.2, 1),
-    transform 1.2s cubic-bezier(0.4, 0, 0.2, 1),
-    padding 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+/* NES-style pixel border using box-shadow */
+.pixel-border {
+  box-shadow:
+    /* outer border */
+    -4px -4px 0 0 #00ff41,
+     4px -4px 0 0 #00ff41,
+    -4px  4px 0 0 #00ff41,
+     4px  4px 0 0 #00ff41,
+    /* top and bottom edges */
+     0   -4px 0 0 #00ff41,
+     0    4px 0 0 #00ff41,
+    /* left and right edges */
+    -4px  0   0 0 #00ff41,
+     4px  0   0 0 #00ff41,
+    /* double border effect */
+    -8px -4px 0 0 #00ff41,
+     8px -4px 0 0 #00ff41,
+    -8px  4px 0 0 #00ff41,
+     8px  4px 0 0 #00ff41,
+    -4px -8px 0 0 #00ff41,
+     4px -8px 0 0 #00ff41,
+    -4px  8px 0 0 #00ff41,
+     4px  8px 0 0 #00ff41;
 }
 
-/* Divider gradient */
-.divider-glow {
-  background: linear-gradient(to right, transparent, #00ff4140, #00ff41, #00ff4140, transparent);
+/* Menu item styles */
+.menu-item {
+  transition: text-shadow 0.15s ease, color 0.15s ease;
+}
+
+.menu-item-active {
+  text-shadow:
+    0 0 8px rgba(0, 255, 65, 0.8),
+    0 0 20px rgba(0, 255, 65, 0.4),
+    0 0 40px rgba(0, 255, 65, 0.2);
+}
+
+/* Stagger fade-in for menu items */
+@keyframes menuItemIn {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.menu-stagger {
+  animation: menuItemIn 0.4s ease-out both;
 }
 
 /* Fade in up animation */
@@ -119,4 +158,51 @@ body {
 .connect-link:hover svg {
   filter: drop-shadow(0 0 8px rgba(0, 255, 65, 0.6));
   transform: scale(1.15);
+}
+
+/* Work experience card */
+.work-card {
+  border: 2px solid rgba(0, 255, 65, 0.3);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.work-card:hover {
+  border-color: #00ff41;
+  box-shadow: 0 0 12px rgba(0, 255, 65, 0.15);
+}
+
+/* Global NES.css overrides for green/black terminal theme */
+.nes-container.is-dark {
+  background-color: rgba(0, 10, 0, 0.95) !important;
+  color: #00ff41 !important;
+  border-color: #00ff41 !important;
+}
+
+.nes-container.is-dark::after {
+  background-color: #0a0a0a !important;
+}
+
+.nes-container.with-title > .title {
+  color: #00ff41 !important;
+  background-color: #0a0a0a !important;
+}
+
+.nes-btn.is-success {
+  color: #000 !important;
+  background-color: #00ff41 !important;
+  font-family: inherit !important;
+}
+
+.nes-btn.is-success::after {
+  box-shadow:
+    inset -4px -4px #009929 !important;
+}
+
+.nes-btn.is-success:hover {
+  background-color: #00cc33 !important;
+  color: #000 !important;
+}
+
+.nes-list.is-circle li::before {
+  color: #00ff41 !important;
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import "nes.css/css/nes.min.css";
 import "./globals.css";
-
 const minecraftia = localFont({
   src: "./fonts/Minecraftia-Regular.ttf",
 });

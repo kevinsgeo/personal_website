@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import Image from "next/image";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
+import Particles from "@/components/Particles";
 
 const FULL_NAME = "Kevin Shine George";
 const TYPE_SPEED = 90;
@@ -9,12 +10,46 @@ const START_DELAY = 600;
 const SUBTITLE_DELAY = 100;
 const SCROLL_UP_DELAY = 1800;
 
+const MENU_ITEMS = [
+  { label: "My Projects", href: "/projects" },
+  { label: "My Work", href: "/work" },
+  { label: "Let's Connect", href: "/connect" },
+];
+
 export default function Home() {
+  const router = useRouter();
   const [displayedChars, setDisplayedChars] = useState(0);
   const [showSubtitle, setShowSubtitle] = useState(false);
   const [subtitleOpacity, setSubtitleOpacity] = useState(0);
   const [phase, setPhase] = useState<"center" | "scrolling" | "done">("center");
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [showMenu, setShowMenu] = useState(false);
 
+  const navigateSoundRef = useRef<HTMLAudioElement | null>(null);
+  const selectSoundRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    navigateSoundRef.current = new Audio("/sounds/navigate.wav");
+    selectSoundRef.current = new Audio("/sounds/select.ogg");
+    navigateSoundRef.current.volume = 0.3;
+    selectSoundRef.current.volume = 0.4;
+  }, []);
+
+  const playNavigate = useCallback(() => {
+    if (navigateSoundRef.current) {
+      navigateSoundRef.current.currentTime = 0;
+      navigateSoundRef.current.play().catch(() => {});
+    }
+  }, []);
+
+  const playSelect = useCallback(() => {
+    if (selectSoundRef.current) {
+      selectSoundRef.current.currentTime = 0;
+      selectSoundRef.current.play().catch(() => {});
+    }
+  }, []);
+
+  // Typing animation
   useEffect(() => {
     const startTimeout = setTimeout(() => {
       const interval = setInterval(() => {
@@ -31,6 +66,7 @@ export default function Home() {
     return () => clearTimeout(startTimeout);
   }, []);
 
+  // Subtitle fade-in
   useEffect(() => {
     if (displayedChars >= FULL_NAME.length) {
       const timeout = setTimeout(() => {
@@ -43,9 +79,13 @@ export default function Home() {
     }
   }, [displayedChars]);
 
+  // Scroll up trigger
   const triggerScrollUp = useCallback(() => {
     setPhase("scrolling");
-    setTimeout(() => setPhase("done"), 1400);
+    setTimeout(() => {
+      setPhase("done");
+      setTimeout(() => setShowMenu(true), 300);
+    }, 1400);
   }, []);
 
   useEffect(() => {
@@ -55,16 +95,47 @@ export default function Home() {
     }
   }, [subtitleOpacity, triggerScrollUp]);
 
+  // Keyboard navigation
+  useEffect(() => {
+    if (!showMenu) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case "ArrowUp":
+          e.preventDefault();
+          setActiveIndex((prev) => {
+            const next = prev > 0 ? prev - 1 : MENU_ITEMS.length - 1;
+            playNavigate();
+            return next;
+          });
+          break;
+        case "ArrowDown":
+          e.preventDefault();
+          setActiveIndex((prev) => {
+            const next = prev < MENU_ITEMS.length - 1 ? prev + 1 : 0;
+            playNavigate();
+            return next;
+          });
+          break;
+        case "Enter":
+          e.preventDefault();
+          playSelect();
+          setTimeout(() => router.push(MENU_ITEMS[activeIndex].href), 200);
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showMenu, activeIndex, router, playNavigate, playSelect]);
+
   const typed = FULL_NAME.slice(0, displayedChars);
   const isTyping = displayedChars < FULL_NAME.length;
   const scrolledUp = phase === "scrolling" || phase === "done";
 
   return (
     <div className="relative z-10 min-h-screen px-6">
-      {/*
-        Header container: always pinned to top.
-        Inner wrapper uses transform to center vertically, then animates to top.
-      */}
+      {/* Header */}
       <div className="fixed inset-x-0 top-0 z-20 flex justify-center pt-12">
         <div
           className="flex flex-col items-center"
@@ -77,13 +148,14 @@ export default function Home() {
         >
           <div className="flex flex-col items-center gap-4">
             <h1 className="text-glow text-2xl tracking-wider sm:text-3xl md:text-4xl lg:text-5xl">
-              <span className="text-green">{typed}</span>
+              <span style={{ color: "#00ff41" }}>{typed}</span>
               <span
-                className={`cursor-blink text-glow inline-block w-[0.55em] text-center text-green ${
+                className={`cursor-blink text-glow inline-block w-[0.55em] text-center ${
                   isTyping || displayedChars === FULL_NAME.length
                     ? "visible"
                     : "invisible"
                 }`}
+                style={{ color: "#00ff41" }}
               >
                 _
               </span>
@@ -91,8 +163,9 @@ export default function Home() {
 
             {showSubtitle && (
               <p
-                className="text-xs tracking-[0.3em] uppercase text-green-dim sm:text-sm"
+                className="text-xs tracking-[0.3em] uppercase sm:text-sm"
                 style={{
+                  color: "#00cc33",
                   opacity: subtitleOpacity,
                   transition: "opacity 1.2s ease-in-out",
                 }}
@@ -107,7 +180,8 @@ export default function Home() {
             style={{
               width: "42rem",
               maxWidth: "90vw",
-              background: "linear-gradient(to right, transparent, rgba(0,255,65,0.25), #00ff41, rgba(0,255,65,0.25), transparent)",
+              background:
+                "linear-gradient(to right, transparent, rgba(0,255,65,0.25), #00ff41, rgba(0,255,65,0.25), transparent)",
               opacity: phase === "done" ? 1 : 0,
               transition: "opacity 0.8s ease-in-out",
             }}
@@ -115,161 +189,63 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Main content — fades in after header reaches top */}
-      <div
-        className="flex flex-col items-center pb-16 pt-44"
-        style={{
-          opacity: phase === "done" ? 1 : 0,
-          transform: phase === "done" ? "translateY(0)" : "translateY(24px)",
-          transition:
-            "opacity 0.8s ease-out, transform 0.8s ease-out",
-        }}
-      >
-        <div className="mt-8 flex flex-col items-center gap-6 sm:mt-12">
-          <p className="max-w-lg text-center text-xs leading-relaxed text-green-dim sm:text-sm">
-            Software developer.&nbsp; Grab my resume below.
-          </p>
-
-            <a
-              href="/Kevin_Shine_George_Resume.pdf"
-              download="Kevin_Shine_George_Resume.pdf"
-              className="resume-btn group relative inline-flex items-center justify-center gap-3 border border-green px-6 text-xs uppercase tracking-[0.2em] text-green transition-all duration-300 sm:text-sm"
-              style={{ paddingTop: "0.9rem", paddingBottom: "0.65rem" }}
-            >
-              <DownloadIcon />
-              <span style={{ position: "relative", top: "3px" }}>Download Resume</span>
-            </a>
-        </div>
-
-        <div className="mt-16 flex flex-col items-center gap-6 sm:mt-20">
-          <p className="text-glow text-base uppercase tracking-[0.2em] text-green sm:text-lg">
-            Let&apos;s Connect!
-          </p>
-
-          <div className="flex items-center gap-8">
-            <a
-              href="https://github.com/kevinsgeo"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="connect-link group flex flex-col items-center gap-2 transition-all duration-300"
-              title="GitHub"
-            >
-              <Image src="/github.svg" alt="GitHub" width={32} height={32} />
-              <span className="text-[10px] tracking-[0.15em] opacity-70 transition-opacity duration-300 group-hover:opacity-100" style={{ color: "#ffffff" }}>
-                  GitHub
-                </span>
-            </a>
-
-            <a
-              href="https://www.linkedin.com/in/kevin-shine-george-99aa9027a/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="connect-link group flex flex-col items-center gap-2 transition-all duration-300"
-              title="LinkedIn"
-            >
-              <Image src="/linkedin.svg" alt="LinkedIn" width={32} height={32} />
-              <span className="text-[10px] tracking-[0.15em] opacity-70 transition-opacity duration-300 group-hover:opacity-100" style={{ color: "#0A66C2" }}>
-                  LinkedIn
-                </span>
-            </a>
-
-            <a
-              href="mailto:shinegeorge@wisc.edu"
-              className="connect-link group flex flex-col items-center gap-2 transition-all duration-300"
-              title="Email"
-            >
-              <EmailIcon />
-              <span className="text-[10px] tracking-[0.15em] opacity-70 transition-opacity duration-300 group-hover:opacity-100" style={{ color: "#F5B041" }}>
-                  Email
-                </span>
-            </a>
+      {/* Retro game menu — NES.css (nostalgic-css) */}
+      {showMenu && (
+        <div
+          className="flex items-center justify-center"
+          style={{
+            paddingTop: "13rem",
+            minHeight: "100vh",
+          }}
+        >
+          <div style={{ animation: "fadeInUp 0.5s ease-out both", width: "420px", maxWidth: "90vw" }}>
+            <section className="nes-container with-title is-centered is-dark is-rounded">
+              <p className="title">SELECT</p>
+              <div className="flex flex-col gap-4">
+                {MENU_ITEMS.map((item, i) => (
+                  <button
+                    key={item.href}
+                    type="button"
+                    className="nes-btn is-success"
+                    onClick={() => {
+                      playSelect();
+                      setTimeout(() => router.push(item.href), 200);
+                    }}
+                    onMouseEnter={() => {
+                      if (activeIndex !== i) {
+                        setActiveIndex(i);
+                        playNavigate();
+                      }
+                    }}
+                    style={{
+                      width: "100%",
+                      textShadow:
+                        activeIndex === i
+                          ? "0 0 8px rgba(0,255,65,0.9)"
+                          : "none",
+                    }}
+                  >
+                    {activeIndex === i && (
+                      <span className="cursor-blink" style={{ marginRight: "0.5rem" }}>
+                        &gt;
+                      </span>
+                    )}
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+              <p
+                className="text-center text-[9px] tracking-[0.2em] uppercase"
+                style={{ color: "#00663a", marginTop: "2.5rem", marginBottom: 0 }}
+              >
+                Use arrow keys &amp; enter
+              </p>
+            </section>
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        {Array.from({ length: 80 }).map((_, i) => (
-          <Particle key={i} index={i} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function DownloadIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M8 2v9M4.5 7.5 8 11l3.5-3.5M3 13h10" />
-    </svg>
-  );
-}
-
-function EmailIcon() {
-  return (
-    <svg
-      width="32"
-      height="32"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="#F5B041"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="2" y="4" width="20" height="16" rx="2" />
-      <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-    </svg>
-  );
-}
-
-function Particle({ index }: { index: number }) {
-  const size = 1 + (index % 3);
-  const left = (index * 13 + 7) % 100;
-  const duration = 6 + (index % 14);
-  const delay = (index * 0.4) % 12;
-  const startY = 100 + (index % 30);
-  const brightness = 0.15 + (index % 6) * 0.07;
-  const drift = (index % 2 === 0 ? 1 : -1) * (5 + (index % 10));
-
-  return (
-    <div
-      className="absolute rounded-full"
-      style={{
-        width: `${size}px`,
-        height: `${size}px`,
-        left: `${left}%`,
-        bottom: `-${size}px`,
-        backgroundColor: `rgba(0, 255, 65, ${brightness})`,
-        animation: `floatUp${index} ${duration}s ${delay}s linear infinite`,
-      }}
-    >
-      <style jsx>{`
-        @keyframes floatUp${index} {
-          0% {
-            transform: translateY(0) translateX(0);
-            opacity: 0;
-          }
-          10% {
-            opacity: 1;
-          }
-          90% {
-            opacity: 1;
-          }
-          100% {
-            transform: translateY(-${startY}vh) translateX(${drift}px);
-            opacity: 0;
-          }
-        }
-      `}</style>
+      <Particles count={80} />
     </div>
   );
 }
