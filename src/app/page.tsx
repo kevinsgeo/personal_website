@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Particles from "@/components/Particles";
+import { useIntroSeen } from "@/components/IntroSeenProvider";
 
 const FULL_NAME = "Kevin Shine George";
 const TYPE_SPEED = 90;
@@ -19,6 +20,7 @@ const MENU_ITEMS: { label: string; href: string; laptopOnly?: boolean }[] = [
 
 export default function Home() {
   const router = useRouter();
+  const { introSeen, setIntroSeen } = useIntroSeen();
   const [displayedChars, setDisplayedChars] = useState(0);
   const [showSubtitle, setShowSubtitle] = useState(false);
   const [subtitleOpacity, setSubtitleOpacity] = useState(0);
@@ -29,6 +31,17 @@ export default function Home() {
 
   const navigateSoundRef = useRef<HTMLAudioElement | null>(null);
   const selectSoundRef = useRef<HTMLAudioElement | null>(null);
+
+  // When returning via client nav (e.g. Back), skip intro; on reload context resets so animation plays
+  useLayoutEffect(() => {
+    if (introSeen) {
+      setDisplayedChars(FULL_NAME.length);
+      setShowSubtitle(true);
+      setSubtitleOpacity(1);
+      setPhase("done");
+      setShowMenu(true);
+    }
+  }, [introSeen]);
 
   useEffect(() => {
     navigateSoundRef.current = new Audio("/sounds/navigate.wav");
@@ -60,8 +73,9 @@ export default function Home() {
     }
   }, []);
 
-  // Typing animation
+  // Typing animation (skip when returning via Back)
   useEffect(() => {
+    if (introSeen) return;
     const startTimeout = setTimeout(() => {
       const interval = setInterval(() => {
         setDisplayedChars((prev) => {
@@ -75,10 +89,11 @@ export default function Home() {
       return () => clearInterval(interval);
     }, START_DELAY);
     return () => clearTimeout(startTimeout);
-  }, []);
+  }, [introSeen]);
 
-  // Subtitle fade-in
+  // Subtitle fade-in (only when intro is playing)
   useEffect(() => {
+    if (introSeen) return;
     if (displayedChars >= FULL_NAME.length) {
       const timeout = setTimeout(() => {
         setShowSubtitle(true);
@@ -100,11 +115,17 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    if (introSeen) return;
     if (subtitleOpacity === 1) {
       const timeout = setTimeout(triggerScrollUp, SCROLL_UP_DELAY);
       return () => clearTimeout(timeout);
     }
-  }, [subtitleOpacity, triggerScrollUp]);
+  }, [introSeen, subtitleOpacity, triggerScrollUp]);
+
+  // Remember intro seen so we skip it when user navigates Back (context resets on reload)
+  useEffect(() => {
+    if (showMenu) setIntroSeen(true);
+  }, [showMenu, setIntroSeen]);
 
   const visibleMenuItems = MENU_ITEMS.filter(
     (item) => !item.laptopOnly || isLaptop
