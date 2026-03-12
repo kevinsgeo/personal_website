@@ -10,10 +10,11 @@ const START_DELAY = 600;
 const SUBTITLE_DELAY = 100;
 const SCROLL_UP_DELAY = 1800;
 
-const MENU_ITEMS = [
+const MENU_ITEMS: { label: string; href: string; laptopOnly?: boolean }[] = [
   { label: "My Projects", href: "/projects" },
   { label: "My Work", href: "/work" },
   { label: "Let's Connect", href: "/connect" },
+  { label: "Play a game", href: "/game", laptopOnly: true },
 ];
 
 export default function Home() {
@@ -24,6 +25,7 @@ export default function Home() {
   const [phase, setPhase] = useState<"center" | "scrolling" | "done">("center");
   const [activeIndex, setActiveIndex] = useState(0);
   const [showMenu, setShowMenu] = useState(false);
+  const [isLaptop, setIsLaptop] = useState(false);
 
   const navigateSoundRef = useRef<HTMLAudioElement | null>(null);
   const selectSoundRef = useRef<HTMLAudioElement | null>(null);
@@ -33,6 +35,15 @@ export default function Home() {
     selectSoundRef.current = new Audio("/sounds/select.ogg");
     navigateSoundRef.current.volume = 0.3;
     selectSoundRef.current.volume = 0.4;
+  }, []);
+
+  // Laptop viewport detection: show "Play a game" only when width >= 768px
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    const update = () => setIsLaptop(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
   }, []);
 
   const playNavigate = useCallback(() => {
@@ -95,6 +106,20 @@ export default function Home() {
     }
   }, [subtitleOpacity, triggerScrollUp]);
 
+  const visibleMenuItems = MENU_ITEMS.filter(
+    (item) => !item.laptopOnly || isLaptop
+  );
+
+  // Clamp activeIndex when visible items change (e.g. resize to mobile)
+  useEffect(() => {
+    const visibleCount = MENU_ITEMS.filter(
+      (item) => !item.laptopOnly || isLaptop
+    ).length;
+    setActiveIndex((prev) =>
+      Math.min(prev, Math.max(0, visibleCount - 1))
+    );
+  }, [isLaptop]);
+
   // Keyboard navigation
   useEffect(() => {
     if (!showMenu) return;
@@ -104,7 +129,8 @@ export default function Home() {
         case "ArrowUp":
           e.preventDefault();
           setActiveIndex((prev) => {
-            const next = prev > 0 ? prev - 1 : MENU_ITEMS.length - 1;
+            const next =
+              prev > 0 ? prev - 1 : visibleMenuItems.length - 1;
             playNavigate();
             return next;
           });
@@ -112,7 +138,8 @@ export default function Home() {
         case "ArrowDown":
           e.preventDefault();
           setActiveIndex((prev) => {
-            const next = prev < MENU_ITEMS.length - 1 ? prev + 1 : 0;
+            const next =
+              prev < visibleMenuItems.length - 1 ? prev + 1 : 0;
             playNavigate();
             return next;
           });
@@ -120,14 +147,24 @@ export default function Home() {
         case "Enter":
           e.preventDefault();
           playSelect();
-          setTimeout(() => router.push(MENU_ITEMS[activeIndex].href), 200);
+          setTimeout(
+            () => router.push(visibleMenuItems[activeIndex].href),
+            200
+          );
           break;
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [showMenu, activeIndex, router, playNavigate, playSelect]);
+  }, [
+    showMenu,
+    activeIndex,
+    visibleMenuItems,
+    router,
+    playNavigate,
+    playSelect,
+  ]);
 
   const typed = FULL_NAME.slice(0, displayedChars);
   const isTyping = displayedChars < FULL_NAME.length;
@@ -216,7 +253,7 @@ export default function Home() {
             <section className="nes-container with-title is-centered is-dark is-rounded">
               <p className="title">SELECT</p>
               <div className="flex flex-col gap-4">
-                {MENU_ITEMS.map((item, i) => (
+                {visibleMenuItems.map((item, i) => (
                   <button
                     key={item.href}
                     type="button"
