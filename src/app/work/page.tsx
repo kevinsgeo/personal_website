@@ -5,7 +5,18 @@ import Link from "next/link";
 import Particles from "@/components/Particles";
 import ScrollReveal from "@/components/ScrollReveal";
 
-const EXPERIENCE = [
+type ExperienceItem = {
+  title: string;
+  company: string;
+  location: string;
+  period: string;
+  image: string;
+  imagePosition: "left" | "right";
+  imageClass?: string;
+  bullets: string[];
+};
+
+const EXPERIENCE: ExperienceItem[] = [
   {
     title: "Undergraduate Research Intern",
     company: "Stewart Computational Group, Morgridge Institute for Research",
