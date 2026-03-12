@@ -268,7 +268,9 @@ export default function Home() {
               marginBottom: "2rem",
             }}
           >
-            I&apos;m Kevin, a computer science and data science double major at UW-Madison. I love films, football, F1, and tech. Look around to learn more!
+            I&apos;m Kevin, a computer science and data science double major at UW-Madison.
+            <span style={{ marginLeft: "0.75em" }}>I love films, football, F1, and tech.</span>
+            <span style={{ marginLeft: "0.75em" }}>Look around to learn more!</span>
           </p>
           <div style={{ animation: "fadeInUp 0.5s ease-out 0.2s both", width: "520px", maxWidth: "92vw" }}>
             <section className="nes-container with-title is-centered is-dark is-rounded">
