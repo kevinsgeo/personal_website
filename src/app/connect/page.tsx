@@ -160,7 +160,7 @@ export default function ConnectPage() {
                   onChange={(e) => setSenderEmail(e.target.value)}
                   placeholder="you@example.com"
                   required
-                  className="nes-input is-dark w-full text-sm"
+                  className="nes-input is-dark w-full text-xs"
                   style={{
                     color: "#00ff41",
                     borderColor: "rgba(0,255,65,0.4)",
@@ -182,7 +182,7 @@ export default function ConnectPage() {
                   placeholder="Type your message..."
                   required
                   rows={4}
-                  className="nes-textarea is-dark w-full resize-y text-sm"
+                  className="nes-textarea is-dark w-full resize-y text-xs"
                   style={{
                     color: "#00ff41",
                     borderColor: "rgba(0,255,65,0.4)",
