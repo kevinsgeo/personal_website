@@ -1,6 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, useId } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useId,
+  useCallback,
+  useLayoutEffect,
+} from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Particles from "@/components/Particles";
@@ -165,8 +172,173 @@ function TechIcon({
   );
 }
 
+function ProjectModal({
+  project,
+  onClose,
+}: {
+  project: FeaturedProject;
+  onClose: () => void;
+}) {
+  const titleId = useId();
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+
+  useLayoutEffect(() => {
+    const prevOverflow = document.body.style.overflow;
+    const prevPaddingRight = document.body.style.paddingRight;
+    const scrollbarWidth =
+      window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = "hidden";
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") requestClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.body.style.paddingRight = prevPaddingRight;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [project.id]);
+
+  useEffect(() => {
+    // Trigger transitions on the next frame so we don't flicker on mount.
+    const raf = window.requestAnimationFrame(() => setIsOpen(true));
+    return () => window.cancelAnimationFrame(raf);
+  }, [project.id]);
+
+  useEffect(() => {
+    if (isOpen) closeBtnRef.current?.focus();
+  }, [isOpen, project.id]);
+
+  const requestClose = () => {
+    if (isClosing) return;
+    setIsClosing(true);
+    // Match CSS close transitions (see `globals.css` modal-panel/backdrop).
+    window.setTimeout(() => onClose(), 240);
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+    >
+      <button
+        type="button"
+        className={`modal-backdrop absolute inset-0 cursor-default bg-black/80 ${
+          isOpen && !isClosing ? "modal-backdrop-in" : "modal-backdrop-out"
+        }`}
+        aria-label="Close project details"
+        onClick={requestClose}
+      />
+      <div
+        className={`modal-panel relative z-[1] max-h-[90vh] w-full max-w-2xl overflow-y-auto ${
+          isOpen && !isClosing ? "modal-panel-in" : "modal-panel-out"
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <section className="nes-container with-title is-dark is-rounded relative">
+          <button
+            ref={closeBtnRef}
+            type="button"
+            className="nes-btn is-error"
+            aria-label="Close"
+            onClick={requestClose}
+            style={{
+              position: "absolute",
+              top: "0.75rem",
+              right: "0.75rem",
+              padding: "0.25rem 0.5rem",
+              lineHeight: 1,
+              zIndex: 2,
+            }}
+          >
+            X
+          </button>
+
+          <p className="title" id={titleId} style={{ color: "#00ff41" }}>
+            {project.title}
+          </p>
+          <p
+            className="mb-3 text-xs uppercase tracking-wider sm:text-sm"
+            style={{ color: "#00cc33" }}
+          >
+            {project.tagline}
+          </p>
+          <p
+            className="mb-4 text-[11px] leading-relaxed sm:text-xs"
+            style={{ color: "#00993d" }}
+          >
+            {project.role}
+          </p>
+          <ul
+            className="mb-4 list-none space-y-2.5 pl-0 text-[10px] leading-relaxed sm:text-xs"
+            style={{ color: "#00cc33" }}
+          >
+            {project.highlights.map((line, j) => (
+              <li key={j} className="flex gap-2">
+                <span
+                  className="mt-1.5 h-1 w-1 shrink-0 rounded-full"
+                  style={{ backgroundColor: "#00ff41" }}
+                  aria-hidden
+                />
+                <span>{line}</span>
+              </li>
+            ))}
+          </ul>
+          <p
+            className="mb-2 border-t border-[#006633] pt-3 text-[10px] tracking-wide sm:text-xs"
+            style={{ color: "#00663a" }}
+          >
+            <span className="font-semibold" style={{ color: "#00cc33" }}>
+              Stack:{" "}
+            </span>
+            {project.stack}
+          </p>
+
+          <div className="mt-5 flex justify-center">
+            <a
+              href={project.githubUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="connect-link group inline-flex flex-col items-center gap-2"
+              aria-label="Open on GitHub"
+              title="GitHub"
+            >
+              <Image
+                src="/github.svg"
+                alt="GitHub"
+                width={32}
+                height={32}
+                className="object-contain"
+              />
+              <span
+                className="text-[10px] tracking-[0.15em] opacity-70 transition-opacity duration-300 group-hover:opacity-100"
+                style={{ color: "#ffffff" }}
+              >
+                GitHub
+              </span>
+            </a>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
 export default function ProjectsPage() {
   const [hoveredName, setHoveredName] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const closeModal = useCallback(() => setSelectedId(null), []);
+  const selectedProject =
+    selectedId == null
+      ? null
+      : FEATURED_PROJECTS.find((p) => p.id === selectedId) ?? null;
 
   return (
     <div className="relative z-10 min-h-screen px-6">
@@ -220,8 +392,55 @@ export default function ProjectsPage() {
               ))}
             </div>
           </div>
+
+          {/* Featured projects */}
+          <div className="mt-14 flex w-full max-w-2xl flex-col items-center gap-6">
+            <h3
+              className="text-center text-sm uppercase tracking-[0.15em] sm:text-base"
+              style={{ color: "#00cc33" }}
+            >
+              Featured Projects
+            </h3>
+            <div className="grid w-full gap-6 sm:grid-cols-2">
+              {FEATURED_PROJECTS.map((project, i) => (
+                <ScrollReveal key={project.id} delay={i * 80}>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedId(project.id)}
+                    className="nes-container with-title is-dark is-rounded is-centered w-full cursor-pointer text-left transition-[box-shadow] hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00ff41] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a]"
+                  >
+                    <p className="title" style={{ color: "#00ff41" }}>
+                      {project.title}
+                    </p>
+                    <p
+                      className="mb-1 text-[10px] uppercase tracking-wider sm:text-xs"
+                      style={{ color: "#00cc33" }}
+                    >
+                      {project.tagline}
+                    </p>
+                    <p
+                      className="text-[10px] leading-relaxed sm:text-xs"
+                      style={{ color: "#00993d" }}
+                    >
+                      {project.cardBlurb}
+                    </p>
+                    <p
+                      className="mt-3 text-[9px] uppercase tracking-[0.2em]"
+                      style={{ color: "#00663a" }}
+                    >
+                      Click for details
+                    </p>
+                  </button>
+                </ScrollReveal>
+              ))}
+            </div>
+          </div>
         </ScrollReveal>
       </div>
+
+      {selectedProject && (
+        <ProjectModal project={selectedProject} onClose={closeModal} />
+      )}
 
       <Particles count={60} />
     </div>

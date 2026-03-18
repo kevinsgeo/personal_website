@@ -156,6 +156,45 @@ body {
   transform: translateY(0);
 }
 
+/* Modal transitions (no page flicker) */
+html {
+  scrollbar-gutter: stable;
+}
+
+.modal-backdrop {
+  opacity: 0;
+  transition: opacity 180ms ease-out;
+  will-change: opacity;
+}
+
+.modal-backdrop.modal-backdrop-in {
+  opacity: 1;
+}
+
+.modal-backdrop.modal-backdrop-out {
+  opacity: 0;
+}
+
+.modal-panel {
+  opacity: 0;
+  transform: translateY(10px) scale(0.98);
+  transition:
+    opacity 200ms ease-out,
+    transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+.modal-panel.modal-panel-in {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.modal-panel.modal-panel-out {
+  opacity: 0;
+  transform: translateY(6px) scale(0.985);
+}
+
 /* Resume button hover */
 .resume-btn:hover {
   background: rgba(0, 255, 65, 0.1);
