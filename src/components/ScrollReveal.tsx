@@ -7,6 +7,8 @@ type ScrollRevealProps = {
   className?: string;
   delay?: number;
   rootMargin?: string;
+  /** Stay visible after first reveal (dependency slot kept for stable hook deps / HMR). */
+  once?: boolean;
 };
 
 export default function ScrollReveal({
@@ -14,6 +16,7 @@ export default function ScrollReveal({
   className = "",
   delay = 0,
   rootMargin = "0px 0px -40px 0px",
+  once = false,
 }: ScrollRevealProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
@@ -24,14 +27,18 @@ export default function ScrollReveal({
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setInView(entry.isIntersecting);
+        if (once) {
+          if (entry.isIntersecting) setInView(true);
+        } else {
+          setInView(entry.isIntersecting);
+        }
       },
       { rootMargin, threshold: 0.1 }
     );
 
     observer.observe(el);
     return () => observer.disconnect();
-  }, [rootMargin]);
+  }, [rootMargin, once]);
 
   return (
     <div
