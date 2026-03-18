@@ -163,7 +163,9 @@ html {
 
 .modal-backdrop {
   opacity: 0;
-  transition: opacity 180ms ease-out;
+  --modal-dur: 500ms;
+  --modal-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity var(--modal-dur) var(--modal-ease);
   will-change: opacity;
 }
 
@@ -177,22 +179,26 @@ html {
 
 .modal-panel {
   opacity: 0;
-  transform: translateY(10px) scale(0.98);
+  transform: translate3d(0, 18px, 0) scale(0.96);
+  --modal-dur: 500ms;
+  --modal-ease: cubic-bezier(0.22, 1, 0.36, 1);
   transition:
-    opacity 200ms ease-out,
-    transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    opacity var(--modal-dur) var(--modal-ease),
+    transform var(--modal-dur) var(--modal-ease);
   will-change: transform, opacity;
-  transform: translateZ(0);
 }
 
 .modal-panel.modal-panel-in {
   opacity: 1;
-  transform: translateY(0) scale(1);
+  transform: translate3d(0, 0, 0) scale(1);
 }
 
 .modal-panel.modal-panel-out {
   opacity: 0;
-  transform: translateY(6px) scale(0.985);
+  transform: translate3d(0, 10px, 0) scale(0.97);
+  transition:
+    opacity var(--modal-dur) var(--modal-ease),
+    transform var(--modal-dur) var(--modal-ease);
 }
 
 /* Resume button hover */

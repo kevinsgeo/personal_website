@@ -217,8 +217,8 @@ function ProjectModal({
   const requestClose = () => {
     if (isClosing) return;
     setIsClosing(true);
-    // Match CSS close transitions (see `globals.css` modal-panel/backdrop).
-    window.setTimeout(() => onClose(), 240);
+    // Wait for backdrop + panel close transitions (see `globals.css`).
+    window.setTimeout(() => onClose(), 520); /* 500ms transitions + frame */
   };
 
   return (
@@ -403,11 +403,11 @@ export default function ProjectsPage() {
             </h3>
             <div className="grid w-full gap-6 sm:grid-cols-2">
               {FEATURED_PROJECTS.map((project, i) => (
-                <ScrollReveal key={project.id} delay={i * 80}>
+                <ScrollReveal key={project.id} delay={i * 80} className="h-full">
                   <button
                     type="button"
                     onClick={() => setSelectedId(project.id)}
-                    className="nes-container with-title is-dark is-rounded is-centered w-full cursor-pointer text-left transition-[box-shadow] hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00ff41] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a]"
+                    className="nes-container with-title is-dark is-rounded is-centered flex h-full w-full cursor-pointer flex-col text-left transition-[box-shadow] hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00ff41] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a]"
                   >
                     <p className="title" style={{ color: "#00ff41" }}>
                       {project.title}
@@ -425,7 +425,7 @@ export default function ProjectsPage() {
                       {project.cardBlurb}
                     </p>
                     <p
-                      className="mt-3 text-[9px] uppercase tracking-[0.2em]"
+                      className="mt-auto pt-3 text-[9px] uppercase tracking-[0.2em]"
                       style={{ color: "#00663a" }}
                     >
                       Click for details
