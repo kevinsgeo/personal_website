@@ -156,6 +156,17 @@ body {
   transform: translateY(0);
 }
 
+/* Hide scrollbar but keep scroll */
+.scrollbar-hide,
+.scrollbar-hide * {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar,
+.scrollbar-hide *::-webkit-scrollbar {
+  display: none;
+}
+
 /* Modal transitions (no page flicker) */
 html {
   scrollbar-gutter: stable;

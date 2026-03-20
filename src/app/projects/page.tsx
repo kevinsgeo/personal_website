@@ -13,6 +13,22 @@ import Image from "next/image";
 import Particles from "@/components/Particles";
 import ScrollReveal from "@/components/ScrollReveal";
 
+type ProjectLink = {
+  label: string;
+  href: string;
+  /** Path to a local SVG in /public, OR a remote URL for the icon. */
+  icon: string;
+  /** If true, the icon is a remote URL and needs `unoptimized`. */
+  remote?: boolean;
+  /** Render a white circle behind the icon (for logos with transparent bg). */
+  bgWhite?: boolean;
+};
+
+type Screenshot = {
+  src: string;
+  caption: string;
+};
+
 type FeaturedProject = {
   id: string;
   title: string;
@@ -21,10 +37,38 @@ type FeaturedProject = {
   role: string;
   highlights: string[];
   stack: string;
-  githubUrl: string;
+  links: ProjectLink[];
+  screenshots?: Screenshot[];
+  paperThumbnail?: { src: string; href: string };
 };
 
 const FEATURED_PROJECTS: FeaturedProject[] = [
+  {
+    id: "skimgpt",
+    title: "SKiM-GPT",
+    tagline: "LLM-powered biomedical hypothesis evaluation",
+    cardBlurb:
+      "RAG system combining literature-based discovery with LLM reasoning to evaluate biomedical hypotheses at scale. Published in BMC Bioinformatics.",
+    role:
+      "Co-developed the SKiM-GPT pipeline and web interface at the Morgridge Institute for Research, integrating co-occurrence search with LLM-based hypothesis scoring across 38M+ PubMed abstracts.",
+    highlights: [
+      "KinderMiner (KM): Rank B-terms by co-occurrence with an A-term in PubMed abstracts to prioritize the strongest A-B associations",
+      "Serial KinderMiner (SKiM): Chain A-B and B-C co-occurrences to surface indirect A-C connections across disparate literature domains",
+      "Hypothesis evaluation with LLMs: Score A-B and A-B-C relationships using configurable hypothesis templates and frontier LLMs with literature-backed reasoning",
+      "Fine-tuned Phi-3 relevance filter removes irrelevant abstracts before LLM evaluation (F1 = 0.90)",
+      "97% faster and 97% cheaper than manual expert review on a 14-hypothesis benchmark (Cohen's kappa = 0.84)",
+    ],
+    stack:
+      "Python, OpenAI API, Phi-3 (fine-tuned), Firebase, Docker, HTCondor, React",
+    links: [
+      { label: "GitHub", href: "https://github.com/stewart-lab/skimgpt", icon: "/github.svg" },
+      { label: "Web App", href: "https://skim.morgridge.org/", icon: "/skim-logo.svg", bgWhite: true },
+    ],
+    paperThumbnail: {
+      src: "/skimgpt-paper.jpg",
+      href: "https://link.springer.com/article/10.1186/s12859-025-06350-7",
+    },
+  },
   {
     id: "rydr",
     title: "Rydr",
@@ -41,7 +85,22 @@ const FEATURED_PROJECTS: FeaturedProject[] = [
     ],
     stack:
       "React Native (Expo), Node.js / Express, Firebase, Google Maps APIs, TypeScript",
-    githubUrl: "https://github.com/madhacks-2025/rydr",
+    links: [
+      { label: "GitHub", href: "https://github.com/madhacks-2025/rydr", icon: "/github.svg" },
+      { label: "Devpost", href: "https://devpost.com/software/rydr-5rfit4", icon: "https://cdn.simpleicons.org/devpost", remote: true },
+    ],
+    screenshots: [
+      { src: "/rydr/01-signin.jpg", caption: "Sign In" },
+      { src: "/rydr/02-signup.jpg", caption: "Sign Up" },
+      { src: "/rydr/03-home.jpg", caption: "Home" },
+      { src: "/rydr/04-find-ride.jpg", caption: "Find a Ride" },
+      { src: "/rydr/05-chat.jpg", caption: "Chat" },
+      { src: "/rydr/06-confirm.jpg", caption: "Confirm Booking" },
+      { src: "/rydr/07-my-rides.jpg", caption: "My Rides" },
+      { src: "/rydr/08-profile.jpg", caption: "Profile" },
+      { src: "/rydr/09-leaderboard.jpg", caption: "Leaderboard" },
+      { src: "/rydr/10-offer-ride.jpg", caption: "Offer a Ride" },
+    ],
   },
   {
     id: "translator",
@@ -58,7 +117,29 @@ const FEATURED_PROJECTS: FeaturedProject[] = [
       "Hosted on Azure App Service with container-based scaling",
     ],
     stack: "FastAPI, PyTorch / T5, SQLite, Docker, Azure",
-    githubUrl: "https://github.com/kevinsgeo/langtranslator_dl",
+    links: [
+      { label: "GitHub", href: "https://github.com/kevinsgeo/langtranslator_dl", icon: "/github.svg" },
+    ],
+  },
+  {
+    id: "nextchapter",
+    title: "NextChapter",
+    tagline: "Local book-swapping for readers",
+    cardBlurb:
+      "Swap books with readers nearby. Scan a barcode, find matches by location, chat, and trade.",
+    role:
+      "Built a mobile-first Android app with Jetpack Compose, Firebase, and Google Maps to connect book lovers for sustainable, local book swaps.",
+    highlights: [
+      "CameraX barcode scanning to instantly look up books via Google Books API",
+      "Geolocation matching with Google Maps API to surface nearby swaps",
+      "Real-time in-app chat powered by Stream API for coordinating trades",
+      "Wishlist notifications alert users when a desired book is listed nearby",
+      "Firebase Realtime Database for profiles, listings, reviews, and swap history",
+    ],
+    stack: "Kotlin, Jetpack Compose, Firebase, Google Maps API, Google Books API, Stream API, CameraX",
+    links: [
+      { label: "GitHub", href: "https://github.com/kevinsgeo/next_chapter", icon: "/github.svg" },
+    ],
   },
 ];
 
@@ -172,6 +253,102 @@ function TechIcon({
   );
 }
 
+function ScreenshotCarousel({ screenshots }: { screenshots: Screenshot[] }) {
+  const [idx, setIdx] = useState(0);
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  const go = (dir: 1 | -1) => {
+    setIdx((prev) => {
+      const next = prev + dir;
+      if (next < 0) return screenshots.length - 1;
+      if (next >= screenshots.length) return 0;
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const child = track.children[idx] as HTMLElement | undefined;
+    if (child) {
+      track.scrollTo({ left: child.offsetLeft - track.offsetLeft, behavior: "smooth" });
+    }
+  }, [idx]);
+
+  return (
+    <div className="mt-5 border-t border-[#006633] pt-4">
+      <p
+        className="mb-3 text-center text-[10px] uppercase tracking-[0.15em] sm:text-xs"
+        style={{ color: "#00cc33" }}
+      >
+        Take a look!
+      </p>
+      <div className="relative flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => go(-1)}
+          className="shrink-0 text-lg leading-none"
+          style={{ color: "#00ff41" }}
+          aria-label="Previous screenshot"
+        >
+          &#x25C0;
+        </button>
+        <div
+          ref={trackRef}
+          className="flex flex-1 snap-x snap-mandatory gap-3 overflow-hidden scroll-smooth scrollbar-hide"
+        >
+          {screenshots.map((s, i) => (
+            <div
+              key={i}
+              className="flex w-full shrink-0 snap-center flex-col items-center gap-2"
+            >
+              <div className="relative h-64 w-full sm:h-80">
+                <Image
+                  src={s.src}
+                  alt={s.caption}
+                  fill
+                  className="rounded object-contain"
+                  sizes="(min-width: 640px) 580px, 90vw"
+                />
+              </div>
+              <span
+                className="text-[10px] tracking-wider"
+                style={{ color: "#00993d" }}
+              >
+                {s.caption}
+              </span>
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => go(1)}
+          className="shrink-0 text-lg leading-none"
+          style={{ color: "#00ff41" }}
+          aria-label="Next screenshot"
+        >
+          &#x25B6;
+        </button>
+      </div>
+      <div className="mt-2 flex justify-center gap-1.5">
+        {screenshots.map((_, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => setIdx(i)}
+            className="h-1.5 rounded-full transition-all duration-200"
+            style={{
+              width: i === idx ? "1rem" : "0.375rem",
+              backgroundColor: i === idx ? "#00ff41" : "#006633",
+            }}
+            aria-label={`Go to screenshot ${i + 1}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function ProjectModal({
   project,
   onClose,
@@ -237,7 +414,7 @@ function ProjectModal({
         onClick={requestClose}
       />
       <div
-        className={`modal-panel relative z-[1] max-h-[90vh] w-full max-w-2xl overflow-y-auto ${
+        className={`modal-panel relative z-[1] max-h-[90vh] w-full max-w-2xl overflow-y-auto scrollbar-hide ${
           isOpen && !isClosing ? "modal-panel-in" : "modal-panel-out"
         }`}
         onClick={(e) => e.stopPropagation()}
@@ -301,29 +478,77 @@ function ProjectModal({
             {project.stack}
           </p>
 
-          <div className="mt-5 flex justify-center">
-            <a
-              href={project.githubUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="connect-link group inline-flex flex-col items-center gap-2"
-              aria-label="Open on GitHub"
-              title="GitHub"
-            >
-              <Image
-                src="/github.svg"
-                alt="GitHub"
-                width={32}
-                height={32}
-                className="object-contain"
-              />
-              <span
-                className="text-[10px] tracking-[0.15em] opacity-70 transition-opacity duration-300 group-hover:opacity-100"
-                style={{ color: "#ffffff" }}
+          {project.screenshots && project.screenshots.length > 0 && (
+            <ScreenshotCarousel screenshots={project.screenshots} />
+          )}
+
+          {project.paperThumbnail && (
+            <div className="mt-5 border-t border-[#006633] pt-4">
+              <p
+                className="mb-3 text-center text-[10px] uppercase tracking-[0.15em] sm:text-xs"
+                style={{ color: "#00cc33" }}
               >
-                GitHub
-              </span>
-            </a>
+                Published Paper
+              </p>
+              <a
+                href={project.paperThumbnail.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group mx-auto block w-fit"
+              >
+                <div className="overflow-hidden rounded border border-[#006633] transition-all duration-300 group-hover:border-[#00ff41] group-hover:shadow-[0_0_16px_rgba(0,255,65,0.25)]">
+                  <Image
+                    src={project.paperThumbnail.src}
+                    alt="Paper first page"
+                    width={280}
+                    height={374}
+                    className="object-contain transition-transform duration-300 group-hover:scale-[1.02]"
+                  />
+                </div>
+              </a>
+            </div>
+          )}
+
+          <div className="mt-5 flex items-start justify-center gap-10">
+            {project.links.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="connect-link group inline-flex flex-col items-center gap-2"
+                aria-label={`Open on ${link.label}`}
+                title={link.label}
+              >
+                {link.bgWhite ? (
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white">
+                    <Image
+                      src={link.icon}
+                      alt={link.label}
+                      width={28}
+                      height={28}
+                      className="object-contain"
+                      {...(link.remote ? { unoptimized: true } : {})}
+                    />
+                  </span>
+                ) : (
+                  <Image
+                    src={link.icon}
+                    alt={link.label}
+                    width={32}
+                    height={32}
+                    className="object-contain"
+                    {...(link.remote ? { unoptimized: true } : {})}
+                  />
+                )}
+                <span
+                  className="text-[10px] tracking-[0.15em] opacity-70 transition-opacity duration-300 group-hover:opacity-100"
+                  style={{ color: "#ffffff" }}
+                >
+                  {link.label}
+                </span>
+              </a>
+            ))}
           </div>
         </section>
       </div>
@@ -394,7 +619,7 @@ export default function ProjectsPage() {
           </div>
 
           {/* Featured projects */}
-          <div className="mt-14 flex w-full max-w-2xl flex-col items-center gap-6">
+          <div className="mt-14 flex w-full max-w-4xl flex-col items-center gap-6">
             <h3
               className="text-center text-sm uppercase tracking-[0.15em] sm:text-base"
               style={{ color: "#00cc33" }}
