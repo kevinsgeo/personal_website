@@ -30,7 +30,7 @@ const FEATURED_PROJECTS: FeaturedProject[] = [
     title: "Rydr",
     tagline: "Schedule-aware student carpooling",
     cardBlurb:
-      "Match riders and drivers by class schedules and destinations—built at MadHacks 2025.",
+      "Match riders and drivers by class schedules and destinations. Built at MadHacks 2025.",
     role:
       "Full-stack mobile app: Expo Router UI, Firebase Auth & Firestore, real-time chat, and an Express backend for PDF schedule parsing.",
     highlights: [
