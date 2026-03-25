@@ -51,6 +51,12 @@ const LINKS = [
     color: "#00e054",
     icon: <Image src="/letterboxd.svg" alt="Letterboxd" width={32} height={32} />,
   },
+  {
+    label: "Spotify",
+    href: "https://open.spotify.com/user/472fmmye4sqey8a3twk1w1q2t?si=8516e297736a412e",
+    color: "#1DB954",
+    icon: <Image src="/spotify.svg" alt="Spotify" width={32} height={32} />,
+  },
 ];
 
 type SubmitStatus = "idle" | "sending" | "success" | "error";
