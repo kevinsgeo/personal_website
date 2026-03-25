@@ -68,7 +68,7 @@ export default function ConnectPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const submittedRef = useRef(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (submittedRef.current || status === "sending") return;
     submittedRef.current = true;
